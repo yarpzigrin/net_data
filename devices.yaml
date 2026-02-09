@@ -1,0 +1,24 @@
+---
+devices:
+
+  - hostname: "KPP1_CENTRAL_CORE"
+    ip: "10.60.10.1"
+    vendor: "nateks"
+    group: "core"
+    location: "KPP"
+
+  - hostname: "AMF_CRSW"
+    ip: "10.66.10.1"
+    vendor: "nateks"
+    group: "core"
+    location: "AMFITEATR"
+  
+  - hostname: "AMF_CRSW"
+    ip: "10.66.10.2"
+    vendor: "nateks"
+    group: "access"
+    location: "AMFITEATR"
+
+
+
+

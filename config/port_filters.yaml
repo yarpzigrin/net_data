@@ -1,0 +1,23 @@
+filters:
+  global:
+    ignore_ports: []  # конкретные порты, которые игнорируем на всех устройствах (например g0/10)
+    ignore_patterns:   # паттерны для 10Gb портов
+      - "tg"
+      - "te"
+      - "xe"
+      - "TenGigabitEthernet"
+      - "TwentyGigabitEthernet"
+      - "FortyGigabitEthernet"
+      - "HundredGigabitEthernet"
+
+  devices:  # конкретные устройства (по IP)
+    10.66.10.1:   # core
+      ignore_ports:
+        - "g0/10"
+        - "g0/11"
+        - "g0/12"
+        - "g0/29"
+        - "g0/30"
+
+    "*":  # fallback для всех остальных устройств
+      ignore_ports: []

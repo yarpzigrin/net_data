@@ -1,0 +1,27 @@
+static_commands:
+  - command: "show running-config"
+    slug: config
+    description: "текущая конфигурация"
+  - command: "show version"
+    slug: version
+    description: "Версия ПО, модель, serial"
+  - command: "show vlan"
+    slug: vlan
+    description: "VLANы и порты"
+  - command: "show interface brief"
+    slug: interface_brief
+    description: "Статус интерфейсов"
+  - command: "show ip interface brief"
+    slug: ip_interface
+    description: "IP-интерфейсы"
+  - command: "show lldp neighbors"
+    slug: lldp_neighbors
+    description: "LLDP-соседи"
+
+dynamic_commands:
+  - command: "show mac address-table"
+    slug: mac_address_table
+    description: "MAC-таблица"
+  - command: "show arp"
+    slug: arp
+    description: "ARP-таблица"
