@@ -1,3 +1,4 @@
+from datetime import datetime
 from easysnmp import Session
 import json
 

@@ -6,6 +6,7 @@ from pathlib import Path
 from src.collectors.ssh_collector import collect_raw
 # from src.collectors.win_dhcp_collector import collect_dhcp  # подключим позже
 from src.parsers.registry import get_parser
+from src.parsers.loader import load_parsers
 from src.normalizer.mac_table import MacTableNormalizer
 from src.normalizer.arp import ArpNormalizer
 # from src.merge.hosts_merge import merge_hosts  # подключим позже
@@ -18,6 +19,7 @@ def load_devices():
     return data["devices"]
 
 def main():
+    load_parsers()
     devices = load_devices()
     print(f"Загружено устройств: {len(devices)}")
 

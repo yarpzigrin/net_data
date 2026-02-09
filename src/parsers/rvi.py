@@ -24,7 +24,7 @@ class RviVlanParser(BaseParser):
                 continue
 
             # Пример: 1 vlan1 active [S] [u]xe1/49 [u]xe1/50 ...
-            match = re.match(r"^(\d+)\s+([^\s]+)\s+(\w+)\s+$$   S   $$\s+(.*)$", line)
+            match = re.match(r"^(\d+)\s+([^\s]+)\s+(\w+)\s+\[S\]\s+(.*)$", line)
             if match:
                 vlan_id = int(match.group(1))
                 name = match.group(2)
@@ -32,9 +32,8 @@ class RviVlanParser(BaseParser):
                 ports_str = match.group(4)
 
                 ports = []
-                for port_part in re.findall(r"$$   ([ut])   $$([^ \[]+)", ports_str):
-                    tag, port = port_part
-                    ports.append({"port": port.strip(), "tag": "untagged" if tag == "u" else "tagged"})
+                for tag, port in re.findall(r"\[([ut])\]([^\s\[]+)", ports_str):
+                    ports.append(port.strip())
 
                 vlans.append({
                     "vlan_id": vlan_id,
