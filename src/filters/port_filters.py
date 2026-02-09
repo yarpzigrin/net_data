@@ -1,6 +1,8 @@
+from functools import lru_cache
 from pathlib import Path
 import yaml
 
+@lru_cache(maxsize=1)
 def load_port_filters() -> dict:
     path = Path("config/port_filters.yaml")
     if not path.exists():
@@ -11,6 +13,9 @@ def load_port_filters() -> dict:
         config = yaml.safe_load(f)
 
     return config.get("filters", {})
+
+def reset_port_filters_cache() -> None:
+    load_port_filters.cache_clear()
 
 def is_ignored_port(device_ip: str, port: str) -> bool:
     if not port:

@@ -5,6 +5,7 @@ from datetime import datetime
 
 from src.collectors.ssh_collector import collect_raw
 from src.parsers.registry import get_parser
+from src.parsers.loader import load_parsers
 from src.normalizer.vlan import VlanNormalizer
 from src.normalizer.interface import InterfaceNormalizer
 from src.normalizer.version import VersionNormalizer
@@ -18,6 +19,7 @@ def load_devices():
     return data["devices"]
 
 def main():
+    load_parsers()
     devices = load_devices()
     print(f"Загружено устройств: {len(devices)}")
 
@@ -63,6 +65,8 @@ def main():
                 "config": {}
             }
 
+            enriched_count = 0
+
             # Парсинг и нормализация VLAN
             parser_vlan = get_parser(device["vendor"], "vlan")
             if parser_vlan:
@@ -73,13 +77,13 @@ def main():
                 save_parsed(normalized_vlan, ip, "vlan")
                 device_obj["vlans"] = [
                     v for v in normalized_vlan.get("vlans", [])
-                    if v["vlan_id"] != "1" and v["vlan_id"] != 1  # на всякий случай проверяем и строку, и число
+                    if v["vlan_id"] != 1
                 ]
                 
                 # Добавляем в глобальный словарь
                 for v in device_obj["vlans"]:
                     vlan_id = v["vlan_id"]
-                    if vlan_id == "1":  # игнорируем VLAN 1
+                    if vlan_id == 1:  # игнорируем VLAN 1
                         continue
 
                     if vlan_id not in global_vlans_dict:
@@ -158,7 +162,6 @@ def main():
 
                 config_intfs = {intf["name"].lower(): intf for intf in normalized_config.get("interfaces_config_normalized", [])}
 
-                enriched_count = 0
                 for intf in device_obj["interfaces"]:
                     config_key = intf["name"].lower()
                     if config_key in config_intfs:

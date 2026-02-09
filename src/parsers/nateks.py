@@ -317,9 +317,6 @@ class NateksArpParser(BaseParser):
         print(f"[DEBUG] Спарсено ARP-записей: {len(entries)}")
         return {"arp_entries": entries}
 
-        print(f"[DEBUG] Спарсено ARP-записей: {len(entries)}")
-        return {"arp_entries": entries}
-
 
 # Регистрация
 register_parser("nateks", "vlan", NateksVlanParser.parse)
@@ -329,4 +326,3 @@ register_parser("nateks", "ip_interface", NateksIpInterfaceParser.parse)
 register_parser("nateks", "running_config", NateksRunningConfigParser.parse)
 register_parser("nateks", "mac_address_table", NateksMacAddressTableParser.parse)
 register_parser("nateks", "arp", NateksArpParser.parse)
-
