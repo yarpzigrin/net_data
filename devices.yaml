@@ -329,17 +329,17 @@ devices:
 
 #MAIV
 
-  #- hostname: "MAIV_core"
-  #  ip: "10.67.10.1"
-  #  vendor: "nateks"
-  #  group: "core"
-  #  location: "AMFITEATR"
+  - hostname: "MAIV_core"
+    ip: "10.67.10.1"
+    vendor: "nateks"
+    group: "core"
+    location: "AMFITEATR"
 
-  #- hostname: "MAIV_access"
-  #  ip: "10.67.10.2"
-  #  vendor: "nateks"
-  #  group: "access"
-  #  location: "MAIV"
+  - hostname: "MAIV_access"
+    ip: "10.67.10.2"
+    vendor: "nateks"
+    group: "access"
+    location: "MAIV"
 
 #KVARTAL
 

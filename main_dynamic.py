@@ -5,7 +5,6 @@ from pathlib import Path
 import concurrent.futures
 import time
 
-import src.parsers.dhcp
 from src.collectors.ssh_collector import collect_raw
 from src.collectors.win_dhcp_collector import collect_dhcp_raw, save_dhcp_raw
 from src.parsers.registry import get_parser
@@ -14,6 +13,11 @@ from src.normalizer.arp import ArpNormalizer
 from src.normalizer.dhcp import DhcpNormalizer
 from src.merge.hosts_merge import merge_hosts
 from src.storage.file import save_parsed, save_dynamic_snapshot
+
+# Явные импорты всех парсеров — чтобы регистрация сработала
+import src.parsers.nateks
+import src.parsers.rvi
+import src.parsers.dhcp
 
 def load_devices():
     with open("devices.yaml", "r", encoding="utf-8") as f:
@@ -63,7 +67,6 @@ def process_device(device):
         normalized_mac = MacTableNormalizer.normalize(parsed_mac, device["vendor"])
         macs = normalized_mac.get("mac_entries_normalized", [])
 
-        # Добавляем информацию об устройстве
         for m in macs:
             m["device_ip"] = ip
             m["device_hostname"] = hostname
@@ -100,7 +103,7 @@ def main():
     all_mac_entries = []
     all_arp_entries = []
 
-    # Параллельный сбор данных по устройствам
+    # Параллельный сбор устройств
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
         future_to_device = {executor.submit(process_device, device): device for device in devices}
         for future in concurrent.futures.as_completed(future_to_device):
@@ -110,7 +113,7 @@ def main():
 
     print(f"Всего собрано MAC: {len(all_mac_entries)}, ARP: {len(all_arp_entries)}")
 
-        # DHCP — сбор сырых данных и парсинг
+    # DHCP — сбор и парсинг
     dhcp_servers = load_dhcp_servers()
 
     dhcp_raw_dir = Path("data/raw/dhcp")
@@ -120,10 +123,7 @@ def main():
     dhcp_parsed_leases_dir.mkdir(parents=True, exist_ok=True)
     dhcp_parsed_reservations_dir.mkdir(parents=True, exist_ok=True)
 
-    # Явный импорт DHCP-парсера — чтобы регистрация сработала
-    import src.parsers.dhcp
-
-    all_dhcp_leases = []  # для merge
+    all_dhcp_leases = []
 
     if not dhcp_servers:
         print("DHCP-серверы не загружены — пропуск DHCP")
@@ -138,7 +138,6 @@ def main():
             print(f"=== Парсим DHCP для сервера {srv_ip} ===")
 
             parsed_leases = get_parser("dhcp", "dhcp_leases")("dhcp_leases", leases_text, "dhcp")
-            # Добавляем dhcp_server в каждую запись
             for lease in parsed_leases.get("dhcp_leases", []):
                 lease["dhcp_server"] = srv_ip
 
@@ -146,20 +145,18 @@ def main():
             save_parsed(normalized_leases, srv_ip, "dhcp_leases")
 
             parsed_reservations = get_parser("dhcp", "dhcp_reservations")("dhcp_reservations", reservations_text, "dhcp")
-            # Добавляем dhcp_server в каждую запись
             for res in parsed_reservations.get("dhcp_reservations", []):
                 res["dhcp_server"] = srv_ip
 
             normalized_reservations = DhcpNormalizer.normalize_reservations(parsed_reservations, "dhcp")
             save_parsed(normalized_reservations, srv_ip, "dhcp_reservations")
 
-            # Собираем все для merge
             all_dhcp_leases.extend(normalized_leases.get("dhcp_leases_normalized", []))
             all_dhcp_leases.extend(normalized_reservations.get("dhcp_reservations_normalized", []))
 
             print(f"[DHCP] Готово для {srv_ip} (всего записей: {len(all_dhcp_leases)})")
-            
-    # Merge — теперь передаём DHCP
+
+    # Merge — теперь с реальными DHCP-данными
     hosts = merge_hosts(all_mac_entries, all_arp_entries, dhcp_leases=all_dhcp_leases)
 
     # Формируем snapshot
