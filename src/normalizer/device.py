@@ -1,4 +1,5 @@
-from .base import BaseNormalizer
+from src.normalizer.base_normalizer import BaseNormalizer
+
 class DeviceNormalizer(BaseNormalizer):
     @classmethod
     def normalize(cls, data, vendor: str):

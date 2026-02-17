@@ -2,14 +2,14 @@ DHCP_servers:
   - ip: 10.60.12.200
     location: KPP
 
-  - ip: 10.61.12.200
-    location: MX
+  #- ip: 10.61.12.200
+  #  location: MX
 
-  - ip: 10.62.12.200
-    location: TC-1
+  #- ip: 10.62.12.200
+    #location: TC-1
 
   #- ip: 10.63.12.200
   #  location: TC-2   
 
-  - ip: 10.65.12.200
-    location: MK
+  #- ip: 10.65.12.200
+    #location: MK

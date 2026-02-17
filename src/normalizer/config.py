@@ -1,5 +1,5 @@
 from typing import Dict, Any, List
-from .base import BaseNormalizer
+from src.normalizer.base_normalizer import BaseNormalizer
 
 class ConfigNormalizer(BaseNormalizer):
     @classmethod

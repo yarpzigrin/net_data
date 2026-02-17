@@ -26,6 +26,9 @@ def save_parsed(parsed_data: Dict, identifier: str, command_slug: str):
         subfolder = "dhcp_leases" if command_slug == "dhcp_leases" else "dhcp_reservations"
         base_path = base_path / subfolder
 
+    elif command_slug == "mac_address_table":
+        base_path = Path("data/parsed/dynamic/macs")
+
     else:
         base_path = Path("data/parsed/other")
 

@@ -1,7 +1,9 @@
 import re
 from typing import Dict, List, Any
-from .base_parser import BaseParser
-from .registry import register_parser
+from src.parsers.base_parser import BaseParser
+from src.parsers.registry import register_parser
+from src.filters.port_filters import is_ignored_port  # импорт фильтра
+
 
 class NateksVlanParser(BaseParser):
     @classmethod
@@ -219,6 +221,9 @@ class NateksRunningConfigParser(BaseParser):
 
         return {"interfaces_config": interfaces}
 
+# src/parsers/nateks.py (обновлённый, с фильтрацией в парсерах ARP и MAC)
+# ... (всё предыдущее остаётся)
+
 class NateksMacAddressTableParser(BaseParser):
     @classmethod
     def parse(cls, command: str, raw_text: str, vendor: str, device_ip: str = None, device_hostname: str = None) -> Dict[str, Any]:
@@ -247,9 +252,12 @@ class NateksMacAddressTableParser(BaseParser):
                     mac_type = parts[2]
                     port = parts[3]
 
-                    # Нормализация MAC → 12 символов без разделителей
                     mac_clean = mac_raw.replace(".", "").replace(":", "").lower()
                     if len(mac_clean) != 12 or not all(c in "0123456789abcdef" for c in mac_clean):
+                        continue
+
+                    # Фильтрация портов (игнор по port_filters.yaml)
+                    if device_ip and is_ignored_port(device_ip, port):
                         continue
 
                     entry = {
@@ -271,7 +279,7 @@ class NateksMacAddressTableParser(BaseParser):
 
 class NateksArpParser(BaseParser):
     @classmethod
-    def parse(cls, command: str, raw_text: str, vendor: str) -> Dict[str, Any]:
+    def parse(cls, command: str, raw_text: str, vendor: str, device_ip: str = None) -> Dict[str, Any]:
         if command != "show arp":
             return {}
 
@@ -304,6 +312,12 @@ class NateksArpParser(BaseParser):
                 if len(mac_clean) != 12 or not all(c in "0123456789abcdef" for c in mac_clean):
                     continue
 
+                # Фильтрация портов (если interface = "v670(tg0/2)" — извлекаем port)
+                port = interface.split("(")[1].split(")")[0] if "(" in interface else interface
+
+                if device_ip and is_ignored_port(device_ip, port):
+                    continue
+
                 entry = {
                     "ip": ip,
                     "mac": mac_clean,
@@ -313,9 +327,6 @@ class NateksArpParser(BaseParser):
                 }
 
                 entries.append(entry)
-
-        print(f"[DEBUG] Спарсено ARP-записей: {len(entries)}")
-        return {"arp_entries": entries}
 
         print(f"[DEBUG] Спарсено ARP-записей: {len(entries)}")
         return {"arp_entries": entries}

@@ -13,6 +13,7 @@ class DhcpNormalizer:
                 "hostname": entry.get("hostname"),
                 "address_state": entry.get("address_state"),
                 "lease_end": entry.get("lease_end"),
+                "dhcp_server": entry.get("dhcp_server"),  # ← сохраняем
                 "source": "lease"
             })
 
@@ -30,6 +31,7 @@ class DhcpNormalizer:
                 "name": entry.get("name"),
                 "description": entry.get("description"),
                 "type": entry.get("type"),
+                "dhcp_server": entry.get("dhcp_server"),  # ← сохраняем
                 "source": "reservation"
             })
 

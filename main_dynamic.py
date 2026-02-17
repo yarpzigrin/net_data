@@ -5,6 +5,7 @@ from pathlib import Path
 import concurrent.futures
 import time
 
+import src.parsers.dhcp
 from src.collectors.ssh_collector import collect_raw
 from src.collectors.win_dhcp_collector import collect_dhcp_raw, save_dhcp_raw
 from src.parsers.registry import get_parser
@@ -109,7 +110,7 @@ def main():
 
     print(f"Всего собрано MAC: {len(all_mac_entries)}, ARP: {len(all_arp_entries)}")
 
-    # DHCP — сбор сырых данных и парсинг
+        # DHCP — сбор сырых данных и парсинг
     dhcp_servers = load_dhcp_servers()
 
     dhcp_raw_dir = Path("data/raw/dhcp")
@@ -118,6 +119,11 @@ def main():
 
     dhcp_parsed_leases_dir.mkdir(parents=True, exist_ok=True)
     dhcp_parsed_reservations_dir.mkdir(parents=True, exist_ok=True)
+
+    # Явный импорт DHCP-парсера — чтобы регистрация сработала
+    import src.parsers.dhcp
+
+    all_dhcp_leases = []  # для merge
 
     if not dhcp_servers:
         print("DHCP-серверы не загружены — пропуск DHCP")
@@ -131,18 +137,30 @@ def main():
 
             print(f"=== Парсим DHCP для сервера {srv_ip} ===")
 
-            parsed_leases = get_parser("nateks", "dhcp_leases")("dhcp_leases", leases_text, "nateks")
-            normalized_leases = DhcpNormalizer.normalize_leases(parsed_leases, "nateks")
+            parsed_leases = get_parser("dhcp", "dhcp_leases")("dhcp_leases", leases_text, "dhcp")
+            # Добавляем dhcp_server в каждую запись
+            for lease in parsed_leases.get("dhcp_leases", []):
+                lease["dhcp_server"] = srv_ip
+
+            normalized_leases = DhcpNormalizer.normalize_leases(parsed_leases, "dhcp")
             save_parsed(normalized_leases, srv_ip, "dhcp_leases")
 
-            parsed_reservations = get_parser("nateks", "dhcp_reservations")("dhcp_reservations", reservations_text, "nateks")
-            normalized_reservations = DhcpNormalizer.normalize_reservations(parsed_reservations, "nateks")
+            parsed_reservations = get_parser("dhcp", "dhcp_reservations")("dhcp_reservations", reservations_text, "dhcp")
+            # Добавляем dhcp_server в каждую запись
+            for res in parsed_reservations.get("dhcp_reservations", []):
+                res["dhcp_server"] = srv_ip
+
+            normalized_reservations = DhcpNormalizer.normalize_reservations(parsed_reservations, "dhcp")
             save_parsed(normalized_reservations, srv_ip, "dhcp_reservations")
 
-            print(f"[DHCP] Готово для {srv_ip}")
+            # Собираем все для merge
+            all_dhcp_leases.extend(normalized_leases.get("dhcp_leases_normalized", []))
+            all_dhcp_leases.extend(normalized_reservations.get("dhcp_reservations_normalized", []))
 
-    # Merge — пока заглушка (раскомментируй, когда DHCP будет готов к merge)
-    hosts = merge_hosts(all_mac_entries, all_arp_entries, dhcp_leases=[])  # dhcp_leases=[]
+            print(f"[DHCP] Готово для {srv_ip} (всего записей: {len(all_dhcp_leases)})")
+            
+    # Merge — теперь передаём DHCP
+    hosts = merge_hosts(all_mac_entries, all_arp_entries, dhcp_leases=all_dhcp_leases)
 
     # Формируем snapshot
     timestamp = datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")

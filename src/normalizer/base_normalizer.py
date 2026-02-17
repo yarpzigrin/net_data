@@ -1,4 +1,5 @@
 from pydantic import BaseModel, validator
+
 class BaseNormalizer:
     @classmethod
     def normalize(cls, data, vendor: str):

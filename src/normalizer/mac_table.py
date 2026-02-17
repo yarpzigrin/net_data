@@ -1,5 +1,5 @@
 from typing import Dict, Any
-from .base import BaseNormalizer
+from src.normalizer.base_normalizer import BaseNormalizer
 
 class MacTableNormalizer(BaseNormalizer):
     @classmethod
