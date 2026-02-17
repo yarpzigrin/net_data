@@ -320,6 +320,95 @@ class NateksArpParser(BaseParser):
         print(f"[DEBUG] Спарсено ARP-записей: {len(entries)}")
         return {"arp_entries": entries}
 
+class NateksDhcpLeasesParser(BaseParser):
+    @classmethod
+    def parse(cls, command: str, raw_text: str, vendor: str) -> Dict[str, Any]:
+        if "dhcp_leases" not in command:
+            return {}
+
+        entries = []
+        current_entry = {}
+        lines = raw_text.splitlines()
+
+        for line in lines:
+            line = line.strip()
+            if not line:
+                if current_entry:
+                    if current_entry.get("mac"):
+                        entries.append(current_entry)
+                    current_entry = {}
+                continue
+
+            # Формат: IPAddress : 10.62.11.11
+            if " : " in line:
+                key, value = line.split(" : ", 1)
+                key = key.strip()
+                value = value.strip()
+
+                if key == "IPAddress":
+                    current_entry["ip"] = value
+                elif key == "ClientId":
+                    mac_clean = value.replace("-", "").replace(":", "").replace(".", "").lower()
+                    if len(mac_clean) == 12:
+                        current_entry["mac"] = mac_clean
+                elif key == "HostName":
+                    current_entry["hostname"] = value if value else None
+                elif key == "AddressState":
+                    current_entry["address_state"] = value
+                elif key == "LeaseExpiryTime":
+                    current_entry["lease_end"] = value if value else None
+
+        # Последняя запись
+        if current_entry and current_entry.get("mac"):
+            entries.append(current_entry)
+
+        print(f"[PARSER] Спарсено leases: {len(entries)}")
+        return {"dhcp_leases": entries}
+
+
+class NateksDhcpReservationsParser(BaseParser):
+    @classmethod
+    def parse(cls, command: str, raw_text: str, vendor: str) -> Dict[str, Any]:
+        if "dhcp_reservations" not in command:
+            return {}
+
+        entries = []
+        current_entry = {}
+        lines = raw_text.splitlines()
+
+        for line in lines:
+            line = line.strip()
+            if not line:
+                if current_entry:
+                    if current_entry.get("mac"):
+                        entries.append(current_entry)
+                    current_entry = {}
+                continue
+
+            if " : " in line:
+                key, value = line.split(" : ", 1)
+                key = key.strip()
+                value = value.strip()
+
+                if key == "IPAddress":
+                    current_entry["ip"] = value
+                elif key == "ClientId":
+                    mac_clean = value.replace("-", "").replace(":", "").replace(".", "").lower()
+                    if len(mac_clean) == 12:
+                        current_entry["mac"] = mac_clean
+                elif key == "Name":
+                    current_entry["name"] = value if value else None
+                elif key == "Description":
+                    current_entry["description"] = value if value else None
+                elif key == "Type":
+                    current_entry["type"] = value
+
+        if current_entry and current_entry.get("mac"):
+            entries.append(current_entry)
+
+        print(f"[PARSER] Спарсено reservations: {len(entries)}")
+        return {"dhcp_reservations": entries}
+
 
 # Регистрация
 register_parser("nateks", "vlan", NateksVlanParser.parse)
@@ -329,4 +418,6 @@ register_parser("nateks", "ip_interface", NateksIpInterfaceParser.parse)
 register_parser("nateks", "running_config", NateksRunningConfigParser.parse)
 register_parser("nateks", "mac_address_table", NateksMacAddressTableParser.parse)
 register_parser("nateks", "arp", NateksArpParser.parse)
+register_parser("nateks", "dhcp_leases", NateksDhcpLeasesParser.parse)
+register_parser("nateks", "dhcp_reservations", NateksDhcpReservationsParser.parse)
 

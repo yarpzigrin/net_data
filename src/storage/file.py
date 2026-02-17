@@ -9,20 +9,25 @@ from datetime import datetime
 import json
 
 def save_parsed(parsed_data: Dict, identifier: str, command_slug: str):
-    """
-    Сохраняет parsed-данные в правильную папку в зависимости от типа команды.
-    """
     timestamp = datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
 
-    # Определяем тип данных и папку
+    # Статические данные (раз в сутки)
     if command_slug in ["vlan", "interface_brief", "version", "ip_interface", "running_config"]:
         base_path = Path("data/parsed/static")
+
+    # Динамические данные (часто)
     elif command_slug in ["mac_address_table", "arp"]:
         base_path = Path("data/parsed/dynamic")
         subfolder = "macs" if command_slug == "mac_address_table" else "arps"
         base_path = base_path / subfolder
+
+    elif command_slug in ["dhcp_leases", "dhcp_reservations"]:
+        base_path = Path("data/parsed/dynamic")
+        subfolder = "dhcp_leases" if command_slug == "dhcp_leases" else "dhcp_reservations"
+        base_path = base_path / subfolder
+
     else:
-        base_path = Path("data/parsed/other")  # fallback для новых команд
+        base_path = Path("data/parsed/other")
 
     base_path.mkdir(parents=True, exist_ok=True)
 
@@ -32,7 +37,7 @@ def save_parsed(parsed_data: Dict, identifier: str, command_slug: str):
         json.dump(parsed_data, f, ensure_ascii=False, indent=2)
 
     print(f"Сохранён parsed ({command_slug}): {filename}")
-    
+
 def save_snapshot(snapshot: Dict, identifier: str = None):
     """
     Сохраняет snapshot в JSON.

@@ -1,0 +1,51 @@
+import winrm
+from datetime import datetime
+from pathlib import Path
+import os
+
+def collect_ad_users_raw(server_ip: str) -> str:
+    """
+    Только чтение пользователей AD (безопасно, без изменений).
+    Возвращает сырой текст PowerShell (таблица).
+    """
+    print(f"[AD] Подключаемся к {server_ip} для чтения пользователей AD")
+
+    try:
+        session = winrm.Session(
+            f"http://{server_ip}:5985/wsman",
+            auth=(os.getenv("WINRM_USERNAME"), os.getenv("WINRM_PASSWORD")),
+            transport="ntlm",
+            server_cert_validation='ignore'
+        )
+
+        cmd = r"""
+Import-Module ActiveDirectory -ErrorAction SilentlyContinue
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+Get-ADUser -Filter * -Properties Description, RoomNumber, SamAccountName, Name -ResultSetSize 20 |
+Select-Object SamAccountName, Name, Description, RoomNumber | Format-Table -AutoSize
+"""
+
+        result = session.run_ps(cmd)
+        raw_text = result.std_out.decode('utf-8', errors='replace')
+
+        print(f"[AD] Получено строк от AD: {len(raw_text.splitlines())}")
+
+        return raw_text
+
+    except Exception as e:
+        print(f"[AD] Ошибка чтения AD с {server_ip}: {e}")
+        return f"Ошибка: {e}\n"
+
+
+def save_ad_raw(raw_text: str, server_ip: str):
+    """Сохраняет сырой текст в data/raw/ad/"""
+    timestamp = datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
+    output_dir = Path("data/raw/ad")
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    path = output_dir / f"{server_ip}_{timestamp}_ad_users.txt"
+
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(raw_text)
+
+    print(f"Сохранён AD raw (текст): {path}")

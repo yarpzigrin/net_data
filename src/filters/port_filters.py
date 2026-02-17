@@ -22,13 +22,11 @@ def is_ignored_port(device_ip: str, port: str) -> bool:
     global_patterns = filters.get("global", {}).get("ignore_patterns", [])
     for pattern in global_patterns:
         if pattern.lower() in port.lower():
-            print(f"[FILTER] Игнорируем порт {port} по глобальному паттерну {pattern}")
             return True
 
     # Глобальные конкретные порты
     global_ignore = filters.get("global", {}).get("ignore_ports", [])
     if port in global_ignore:
-        print(f"[FILTER] Игнорируем порт {port} по глобальному списку")
         return True
 
     # Конкретное устройство (по IP)
@@ -36,7 +34,6 @@ def is_ignored_port(device_ip: str, port: str) -> bool:
     if device_filters:
         ignore_ports = device_filters.get("ignore_ports", [])
         if port in ignore_ports:
-            print(f"[FILTER] Игнорируем порт {port} для устройства {device_ip}")
             return True
 
     # Fallback "*"
@@ -44,7 +41,6 @@ def is_ignored_port(device_ip: str, port: str) -> bool:
     if fallback:
         ignore_ports = fallback.get("ignore_ports", [])
         if port in ignore_ports:
-            print(f"[FILTER] Игнорируем порт {port} по fallback")
             return True
 
     return False
