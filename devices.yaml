@@ -321,39 +321,39 @@ devices:
     group: "access"
     location: "AMFITEATR"
 
-  - hostname: "AMF_ACSW_KSB"
-    ip: "10.66.10.3"
-    vendor: "nateks"
-    group: "access"
-    location: "AMFITEATR"
+  #- hostname: "AMF_ACSW_KSB"
+  #  ip: "10.66.10.3"
+  #  vendor: "nateks"
+  #  group: "access"
+  #  location: "AMFITEATR"
 
 #MAIV
 
-  - hostname: "MAIV_core"
-    ip: "10.67.10.1"
-    vendor: "nateks"
-    group: "core"
-    location: "AMFITEATR"
+  #- hostname: "MAIV_core"
+  #  ip: "10.67.10.1"
+  #  vendor: "nateks"
+  #  group: "core"
+  #  location: "AMFITEATR"
 
-  - hostname: "MAIV_access"
-    ip: "10.67.10.2"
-    vendor: "nateks"
-    group: "access"
-    location: "MAIV"
+  #- hostname: "MAIV_access"
+  #  ip: "10.67.10.11"
+  #  vendor: "nateks"
+  # group: "access"
+  # location: "MAIV"
 
 #KVARTAL
 
-  - hostname: "KVARTAL_CRSW"
-    ip: "10.68.10.1"
-    vendor: "nateks"
-    group: "access"
-    location: "KVARTAL"
+  #- hostname: "KVARTAL_CRSW"
+  #  ip: "10.68.10.1"
+  #  vendor: "nateks"
+  #  group: "access"
+  #  location: "KVARTAL"
 
-  - hostname: "KVARTAL_ACSW"
-    ip: "10.68.10.2"
-    vendor: "rvi"
-    group: "access"
-    location: "KVARTAL"
+  #- hostname: "KVARTAL_ACSW"
+  #  ip: "10.68.10.2"
+  #  vendor: "rvi"
+  #  group: "access"
+  # location: "KVARTAL"
 
 #VSS
 

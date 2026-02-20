@@ -3,6 +3,7 @@ import yaml
 from pathlib import Path
 from datetime import datetime
 
+
 from src.collectors.ssh_collector import collect_raw
 from src.parsers.registry import get_parser
 from src.normalizer.vlan import VlanNormalizer
