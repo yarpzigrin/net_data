@@ -6,4 +6,5 @@ __pycache__/
 data/
 *.json.gz
 devices.yaml
-devices copy.yaml
+devices_copy.yaml
+.gitignore
